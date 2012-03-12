@@ -2,14 +2,17 @@
 (function(window, undefined){
 
     // The Night - http://en.wikipedia.org/wiki/Nyx
+    // Constructor
     var Nyx = function(selector, context){
         return Object.create(Chaos).init(selector, context);
     };
 
     // Cow - http://en.wikipedia.org/wiki/Io_(mythology)
+    // Instance Variable
     var io;
 
     // Void - http://en.wikipedia.org/wiki/Chaos_(cosmogony)
+    // Core
     var Chaos = {
         version: "1.0",
         selector: "",
@@ -19,11 +22,11 @@
             io = this;
             return Selene.parse(selector, context);
         },
-        push: Array.prototype.push,
         splice: [].splice
     };
 
     // Moon - http://en.wikipedia.org/wiki/Selene
+    // Selector Engine
     var Selene = {
         parse: function(selector, context){
             // Empty
@@ -37,30 +40,38 @@
             }
             // CSS Selector
             if(typeof selector === "string") {
-                if(typeof context === "undefined") {
-                    context = io.context;
-                } else {
-                    io.context = context;
-                }
                 return this.css(selector, context);
             }
             // Invalid Selector
             throw new Error("Invalid Selector");
         },
-        css: function(selector, context){
+        css: function(selector, context) {
             selector = io.selector = this.clean(selector);
             var items = selector.split(/\s+/),
-                cur = [];
+                parent = context || window.document,
+                tmp = [];
             // Id selector
-            if(items[0][0] === "#") {
+            if (items[0][0] === "#") {
                 var item = items.shift();
-                cur[0] = document.getElementById(item.substring(1));
-                if(!items.length) {
-                    io[0] = cur[0];
+                parent = parent.getElementById(item.substring(1));
+                if (!items.length) {
+                    io[0] = parent;
                     io.length = 1;
                     return io;
                 }
             }
+            items.forEach(function(item) {
+                var subItems = item.split(".");
+                if (subItems[0] !== "") {
+                    var subItem = subItems.shift();
+                    tmp = parent.getElementsByTagName(subItem);
+                    if(!subItems.length) {
+                        [].push.apply(io, tmp);
+                        return io;
+                    }
+                } else {}
+            });
+            return io;
         },
         clean: function(selector){
             return selector.substring(selector.lastIndexOf("#"));
@@ -68,6 +79,7 @@
     };
 
     // Darkness - http://en.wikipedia.org/wiki/Erebus
+    // Event Handler
     var Erebus = {
     };
 
