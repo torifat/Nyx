@@ -22,6 +22,7 @@
             io = this;
             return Selene.parse(selector, context);
         },
+        push: [].push,
         splice: [].splice
     };
 
@@ -50,7 +51,7 @@
             var items = selector.split(/\s+/),
                 parent = context || window.document,
                 tmp = [];
-            // Id selector
+            // Id Selector
             if (items[0][0] === "#") {
                 var item = items.shift();
                 parent = parent.getElementById(item.substring(1));
@@ -60,14 +61,31 @@
                     return io;
                 }
             }
+            // Others Selector - Tag, Class
             items.forEach(function(item) {
                 var subItems = item.split(".");
+                // Tag Selector
                 if (subItems[0] !== "") {
                     var subItem = subItems.shift();
-                    tmp = parent.getElementsByTagName(subItem);
+                    tmp = [].slice.call(parent.getElementsByTagName(subItem));
                     if(!subItems.length) {
                         [].push.apply(io, tmp);
                         return io;
+                    } else {
+                        // Tag + Class Selector
+                        tmp.forEach(function(element){
+                            var flag = true;
+                            var tmpName = " " + element.className + " ";
+                            subItems.forEach(function(subItem){
+                                if(tmpName.lastIndexOf(" " + subItem + " ") < 0) {
+                                    flag = false;
+                                    return;
+                                }
+                            });
+                            if(flag) {
+                                io.push(element);
+                            }
+                        });
                     }
                 } else {}
             });
