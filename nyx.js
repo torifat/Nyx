@@ -7,10 +7,6 @@
         return Object.create(Chaos).init(selector, context);
     };
 
-    // Cow - http://en.wikipedia.org/wiki/Io_(mythology)
-    // Instance Variable
-    var io;
-
     // Void - http://en.wikipedia.org/wiki/Chaos_(cosmogony)
     // Core
     var Chaos = {
@@ -19,8 +15,7 @@
         context: window.document,
         length: 0,
         init: function(selector, context){
-            io = this;
-            return Selene.parse(selector, context);
+            return Selene.parse.call(this, selector, context);
         },
         push: [].push,
         splice: [].splice
@@ -32,67 +27,88 @@
         parse: function(selector, context){
             // Empty
             if(!selector) {
-                return io;
+                return this;
+            }
+            // Optimize for Body
+            if(selector === "body" && typeof context === "undefined") {
+                this.context = this[0] = this.context.body;
+                return this;
             }
             // DOM Elements
             if(selector.nodeType) {
-                io.context = io[0] = selector;
-                return io;
+                this.context = this[0] = selector;
+                return this;
             }
             // CSS Selector
             if(typeof selector === "string") {
-                return this.css(selector, context);
+                return Selene.css.call(this, selector, context);
             }
             // Invalid Selector
             throw new Error("Invalid Selector");
         },
         css: function(selector, context) {
-            selector = io.selector = this.clean(selector);
+            selector = this.selector = Selene.clean.call(this, selector);
             var items = selector.split(/\s+/),
-                parent = context || window.document,
-                tmp = [];
+                parents = [],
+                cur = [];
+            parents.push(context || window.document);
             // Id Selector
             if (items[0][0] === "#") {
                 var item = items.shift();
-                parent = parent.getElementById(item.substring(1));
+                parent = parents[0].getElementById(item.substring(1));
                 if (!items.length) {
-                    io[0] = parent;
-                    io.length = 1;
-                    return io;
+                    this[0] = parent;
+                    this.length = 1;
+                    return this;
                 }
             }
             // Others Selector - Tag, Class
             items.forEach(function(item) {
-                var subItems = item.split(".");
-                // Tag Selector
-                if (subItems[0] !== "") {
-                    var subItem = subItems.shift();
-                    tmp = [].slice.call(parent.getElementsByTagName(subItem));
-                    if(!subItems.length) {
-                        [].push.apply(io, tmp);
-                        return io;
+                cur = [];
+                parents.forEach(function(parent){
+                    var subItems = item.split(".");
+                    // Tag Selector
+                    if (subItems[0] !== "") {
+                        [].push.apply(cur, Selene.getBy("Tag", parent, subItems));
                     } else {
-                        // Tag + Class Selector
-                        tmp.forEach(function(element){
-                            var flag = true;
-                            var tmpName = " " + element.className + " ";
-                            subItems.forEach(function(subItem){
-                                if(tmpName.lastIndexOf(" " + subItem + " ") < 0) {
-                                    flag = false;
-                                    return;
-                                }
-                            });
-                            if(flag) {
-                                io.push(element);
-                            }
-                        });
+                    // Class Selector
+                        subItems.shift(); // remove the extra "" from front
+                        [].push.apply(cur, Selene.getBy("Class", parent, subItems));
                     }
-                } else {}
+                });
+                parents = cur.slice(0);
             });
-            return io;
+            if(cur.length) {
+                [].push.apply(this, cur);
+            }
+            return this;
         },
         clean: function(selector){
             return selector.substring(selector.lastIndexOf("#"));
+        },
+        getBy: function(type, parent, subItems){
+            var subItem = subItems.shift(),
+                out = [],
+                tmp = [].slice.call(parent["getElementsBy" + type + "Name"](subItem));
+            if(!subItems.length) {
+                [].push.apply(out, tmp);
+            } else {
+                tmp.forEach(function(element){
+                    var flag = true;
+                    var tmpName = " " + element.className + " ";
+                    subItems.forEach(function(subItem){
+                        // used lastIndexOf to reuse the previously used polyfill for old buddies
+                        if(tmpName.lastIndexOf(" " + subItem + " ") < 0) {
+                            flag = false;
+                            return;
+                        }
+                    });
+                    if(flag) {
+                        out.push(element);
+                    }
+                });
+            }
+            return out;
         }
     };
 
