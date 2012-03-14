@@ -20,6 +20,7 @@
         push: [].push,
         splice: [].splice
     };
+    Nyx.fn = Chaos;
 
     // Moon - http://en.wikipedia.org/wiki/Selene
     // Selector Engine
@@ -173,4 +174,4 @@
     }
 
     window.Nyx = window.$ = Nyx;
-}((window === undefined) ? this : window));
+}(window));
