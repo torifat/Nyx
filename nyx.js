@@ -55,11 +55,13 @@
             // Optimize for Body
             if(selector === "body" && typeof context === "undefined") {
                 this.context = this[0] = this.context.body;
+                this.length = 1;
                 return this;
             }
             // DOM Elements
             if(selector.nodeType) {
                 this.context = this[0] = selector;
+                this.length = 1;
                 return this;
             }
             // CSS Selector
@@ -139,18 +141,29 @@
     // DOM
     var Deimos = {
         hasClass: function(value){
-            var has = false;
             value = value.trim();
-            this.each(function(element){
-                if ((" " + element.className + " ").indexOf(" " + value + " ") > -1) {
-                    return (has = true);
-                }
-            });
-            return has;
+            return this.each(function(element){
+                return (" " + element.className + " ").indexOf(" " + value + " ") > -1;
+            }) || false;
         },
         addClass: function(value){
             this.each(function(element){
-                element.className = (element.className.trim() + " " + value).trim();
+                var className = element.className;
+                if(!className) {
+                    className = value;
+                } else {
+                    var classNames = value.split(/\s+/),
+                        l = classNames.length,
+                        $element = Nyx(element),
+                        set = {};
+                        for(var i=0; i<l; ++i) {
+                            if(!$element.hasClass(classNames[i]) && !set[classNames[i]]) {
+                                set[classNames[i]] = 1;
+                                className += " " + classNames[i];
+                            }
+                        }
+                }
+                element.className = className.trim();
             });
             return this;
         },
