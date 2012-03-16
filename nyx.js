@@ -17,6 +17,28 @@
         init: function(selector, context){
             return Selene.parse.call(this, selector, context);
         },
+        extend: function(obj, map){
+            /*
+                TODO add deep copy support
+            */
+            if(typeof map === "undefined") {
+                for(var prop in obj) {
+                    if(obj.hasOwnProperty(prop)) {
+                        // Overwrite allowed
+                        Chaos[prop] = obj[prop];
+                    }
+                }
+            } else {
+                map.forEach(function(prop){
+                    if(typeof prop === "string") {
+                        Chaos[prop] = obj[prop];
+                    } else {
+                        Chaos[prop[1]] = obj[prop[0]];
+                    }
+                });
+            }
+        },
+        each: [].forEach,
         push: [].push,
         splice: [].splice
     };
@@ -113,6 +135,30 @@
         }
     };
 
+    // Dread - http://en.wikipedia.org/wiki/Deimos_(mythology)
+    // DOM
+    var Deimos = {
+        hasClass: function(value){
+            var has = false;
+            value = value.trim();
+            this.each(function(element){
+                if ((" " + element.className + " ").indexOf(" " + value + " ") > -1) {
+                    return (has = true);
+                }
+            });
+            return has;
+        },
+        addClass: function(value){
+            this.each(function(element){
+                element.className = (element.className.trim() + " " + value).trim();
+            });
+            return this;
+        },
+        removeClass: function(value){
+        }
+    };
+    Nyx.fn.extend(Deimos);
+
     // Darkness - http://en.wikipedia.org/wiki/Erebus
     // Event Handler
     var Erebus = {
@@ -126,52 +172,7 @@
             return new F();
         };
     }
-    if(typeof Array.prototype.forEach !== "function") {
-        Array.prototype.forEach = function(fun, thisp) {
-            if (this === void 0 || this === null) {
-                throw new TypeError();
-            }
-            var t = Object(this);
-            var len = t.length >>> 0;
-            if (typeof fun !== "function") {
-                throw new TypeError();
-            }
-            for (var i = 0; i < len; i++) {
-                if (i in t) {
-                    fun.call(thisp, t[i], i, t);
-                }
-            }
-        };
-    }
-    if(typeof Array.prototype.lastIndexOf !== "function") {
-        Array.prototype.lastIndexOf = function(searchElement /*, fromIndex*/ ) {
-            if (this === void 0 || this === null) {
-                throw new TypeError();
-            }
-            var t = Object(this);
-            var len = t.length >>> 0;
-            if (len === 0) {
-                return -1;
-            }
-            var n = len;
-            if (arguments.length > 1) {
-                n = Number(arguments[1]);
-                if (n !== n) {
-                    n = 0;
-                } else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0)) {
-                    n = (n > 0 || -1) * Math.floor(Math.abs(n));
-                }
-            }
-            var k = n >= 0 ? Math.min(n, len - 1) : len - Math.abs(n);
-
-            for (; k >= 0; k--) {
-                if (k in t && t[k] === searchElement) {
-                    return k;
-                }
-            }
-            return -1;
-        };
-    }
+    // Other Polyfills removed, will be added later
 
     window.Nyx = window.$ = Nyx;
 }(window));
