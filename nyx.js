@@ -141,33 +141,48 @@
     // DOM
     var Deimos = {
         hasClass: function(value){
+            var has = false;
             value = value.trim();
-            return this.each(function(element){
-                return (" " + element.className + " ").indexOf(" " + value + " ") > -1;
-            }) || false;
+            this.each(function(element){
+                if ((" " + element.className + " ").indexOf(" " + value + " ") > -1) {
+                    return (has = true);
+                }
+            });
+            return has;
         },
         addClass: function(value){
+            var tmp = value.split(/\s+/),
+                l = tmp.length,
+                set = {},
+                classNames = [];
+            for(var i=0; i<l; ++i) {
+                if(!set[tmp[i]]) {
+                    set[tmp[i]] = 1;
+                    classNames.push(tmp[i]);
+                }
+            }
+            l = classNames.length;
             this.each(function(element){
                 var className = element.className;
                 if(!className) {
                     className = value;
                 } else {
-                    var classNames = value.split(/\s+/),
-                        l = classNames.length,
-                        $element = Nyx(element),
-                        set = {};
-                        for(var i=0; i<l; ++i) {
-                            if(!$element.hasClass(classNames[i]) && !set[classNames[i]]) {
-                                set[classNames[i]] = 1;
-                                className += " " + classNames[i];
-                            }
+                    var $element = Nyx(element);
+                    for(var i=0; i<l; ++i) {
+                        if(!$element.hasClass(classNames[i])) {
+                            className += " " + classNames[i];
                         }
+                    }
                 }
                 element.className = className.trim();
             });
             return this;
         },
         removeClass: function(value){
+            this.each(function(element){
+                element.className = ((" " + element.className + " ").replace(/\s+\s+/)).trim();
+            });
+            return this;
         }
     };
     Nyx.fn.extend(Deimos);
