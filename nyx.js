@@ -199,6 +199,17 @@
                 element.className = className.trim();
             });
             return this;
+        },
+        toggleClass: function(value){
+            var classNames = value.split(/\s+/),
+                l = classNames.length;
+            this.each(function(element){
+                var tmpElement = Nyx(element);
+                for(var i=0; i<l; ++i) {
+                    if(tmpElement.hasClass(classNames[i]) ? tmpElement.removeClass(classNames[i]) : tmpElement.addClass(classNames[i]));
+                }
+            });
+            return this;
         }
     };
     Nyx.fn.extend(Deimos);
