@@ -66,10 +66,15 @@
             }
             // CSS Selector
             if(typeof selector === "string") {
-                var selectors = selector.split(",");
-                    l = selectors.length;
-                for(var i=0; i<l; ++i) {
-                    Selene.css.call(this, selectors[i], context);
+                context = context || window.document;
+                if(typeof context.querySelectorAll === "function") {
+                    this.push.apply(this, context.querySelectorAll(selector));
+                } else {
+                    var selectors = selector.split(",");
+                        l = selectors.length;
+                    for(var i=0; i<l; ++i) {
+                        Selene.css.call(this, selectors[i], context);
+                    }
                 }
                 return this;
             }
@@ -81,7 +86,7 @@
             var items = selector.split(/\s+/),
                 parents = [],
                 cur = [];
-            parents.push(context || window.document);
+            parents.push(context);
             // Id Selector
             if (items[0][0] === "#") {
                 var item = items.shift();
