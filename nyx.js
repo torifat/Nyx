@@ -66,7 +66,12 @@
             }
             // CSS Selector
             if(typeof selector === "string") {
-                return Selene.css.call(this, selector, context);
+                var selectors = selector.split(",");
+                    l = selectors.length;
+                for(var i=0; i<l; ++i) {
+                    Selene.css.call(this, selectors[i], context);
+                }
+                return this;
             }
             // Invalid Selector
             throw new Error("Invalid Selector");
@@ -109,7 +114,7 @@
             return this;
         },
         clean: function(selector){
-            return selector.substring(selector.lastIndexOf("#"));
+            return selector.substring(selector.lastIndexOf("#")).trim();
         },
         getBy: function(type, parent, subItems){
             var subItem = subItems.shift(),
@@ -179,8 +184,19 @@
             return this;
         },
         removeClass: function(value){
+            var classNames = value.split(/\s+/),
+                l = classNames.length,
+                className;
             this.each(function(element){
-                element.className = ((" " + element.className + " ").replace(/\s+\s+/)).trim();
+                if(value) {
+                    className = " " + element.className + " ";
+                    for(var i=0; i<l; ++i) {
+                        className = className.replace(" " + classNames[i] + " ", " ");
+                    }
+                } else {
+                    className = "";
+                }
+                element.className = className.trim();
             });
             return this;
         }
